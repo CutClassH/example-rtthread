@@ -10,7 +10,9 @@ OBJ_DIR ?= ./$(CONFIGURATION)/build
 
 C_SOURCES = $(wildcard *.c)
 
-PWD_PATH :=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+_COMMON_CFLAGS  += -I$(SRC_PATH)
+
+SRC_PATH :=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 # ----------------------------------------------------------------------
 # RT-Thread 
@@ -20,10 +22,12 @@ RTTHREAD_SOURCE_PATH ?= ../../rtthread-metal
 include $(RTTHREAD_SOURCE_PATH)/rtthread.mk
 
 #     Add RT-Thread include 
-_COMMON_CFLAGS  += -I$(PWD_PATH)
 _COMMON_CFLAGS  += ${RTTHREAD_INC}
 
-CFLAGS += -Wl,--keep-symbol finsh_system_init
+#no-gc-sections
+CUT_LDFLAGS = -Wl,--gc-sections
+RT_LDFLAGS := $(filter-out -T* ,$(filter-out $(CUT_LDFLAGS),$(LDFLAGS)))
+RT_LDFLAGS += -T$(SRC_PATH)/metal.rtthread.lds
 
 #     Update our list of C source files.
 C_SOURCES += ${RTTHREAD_SRC_C}
@@ -93,7 +97,7 @@ directories: $(BUILD_DIRECTORIES)
 $(PROGRAM): \
 	directories \
 	$(OBJS)
-	$(CC) $(CFLAGS) $(LDFLAGS) $(_ADD_LDFLAGS) $(OBJS) $(LOADLIBES) $(LDLIBS) -o $@
+	$(CC) $(CFLAGS) $(RT_LDFLAGS) $(_ADD_LDFLAGS) $(OBJS) $(LOADLIBES) $(LDLIBS) -o $@
 	@echo
 
 clean::

@@ -1,5 +1,2 @@
-# rtthread
-A simple damo which prints seconds whith rt-rthread.
-
-# note
-The finsh component is currently unavailable.
+# sifive-welcome
+A simple welcome example which prints SiFive banner and uses board LEDs
